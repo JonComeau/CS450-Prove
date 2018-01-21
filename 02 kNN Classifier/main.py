@@ -153,7 +153,7 @@ y = np.array(df['class'])
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
-inp = input("Would you like to use a kdtree to find the nearest neighbors? (Y or N): ")
+tree_path = input("Would you like to use a kdtree to find the nearest neighbors? (Y or N): ")
 
 # test input
 # tree_path = 'y'
