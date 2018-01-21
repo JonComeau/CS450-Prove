@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score
 
 def load():
     iris = datasets.load_iris()
+    print(iris.target)
     return iris
 
 
