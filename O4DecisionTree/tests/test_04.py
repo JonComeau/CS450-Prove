@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase
 
-from O4DecisionTree.DecisionTreeClassifier import calc_entropy, DecisionTree
+from O4DecisionTree.DTClassifier import calc_entropy, DecisionTree
 
 
 class OhFour(TestCase):

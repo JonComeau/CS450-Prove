@@ -5,6 +5,7 @@ from collections import Counter
 import pandas as pd
 
 
+# Taken from https://stackoverflow.com/a/2135920/7747350
 def split(a, n):
     k, m = divmod(len(a), n)
     return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
@@ -20,7 +21,7 @@ class DecisionTreeLeaf:
         }
 
     def path(self, value):
-        return self.value
+        return self.class_value
 
 
 class DecisionTreeNode:
@@ -41,53 +42,52 @@ class DecisionTreeNode:
         }
 
         for index in range(len(self.children)):
+            is_child_leaf = isinstance(self.children[index], DecisionTreeLeaf)
+
             node["children"].append({
-                "path_value": list(self.path_values_list[index]),
-                "node": self.children[index].structure()
+                "path_value": list(self.path_list[index]) if isinstance(self.path_list[index], tuple) else self.path_list[index],
+                ("node" if not is_child_leaf else "leaf"): self.children[index].structure()
             })
 
         return node
 
-    def path(self, value):
+    def path(self, value, proba=False):
         print("\tPredicted Value {}".format(value))
-        for index in range(len(self.path_list)):
-            if isinstance(self.path_list[index], tuple):
-                if index == 0:
-                    if value < self.path_list[index][0]:
-                        print("\tPath: {}".format(self.path_list[index]))
-                        print("\t\tTuple Path")
-                        print("\t\t\tLeft Branch")
-                        return self.children[index]
-                if index == 1:
-                    if self.path_list[index][1] > value > self.path_list[index][0]:
-                        print("\tPath: {}".format(self.path_list[index]))
-                        print("\t\tTuple Path")
-                        print("\t\t\tMiddle Branch")
-                        return self.children[index]
-                if index == 2:
-                    if value > self.path_list[index][0]:
-                        print("\tPath: {}".format(self.path_list[index]))
-                        print("\t\tTuple Path")
-                        print("\t\t\tRight Branch")
-                        return self.children[index]
+
+        if value in self.path_list:
+            print("\t\tNon-Tuple Path")
+            print("\t\t\tValue exists in node")
+            if proba:
+                return self.children[self.path_list.index(value)], self.path_list[self.path_list.index(value)]
             else:
-                print("\t\tNon-Tuple Path")
-                if value in self.path_list:
-                    print("\t\t\tValue exists in node")
-                    return self.children[self.path_list.index(value)]
+                return self.children[self.path_list.index(value)]
+
+        for index in range(len(self.path_list)):
+            if isinstance(self.path_list[index], tuple) and (index == 0 and value < self.path_list[index][0]) or (index == 1 and self.path_list[index][1] > value > self.path_list[index][0]) or (index == 2 and value > self.path_list[index][0]):
+                print("\tPath: {}".format(self.path_list[index]))
+                print("\t\tTuple Path")
+                print("\t\t\tLeft Branch")
+                if proba:
+                    print("\t\t\t\tProbability Included")
+                    return self.children[index], self.path_list[index]
                 else:
-                    print("\t\t\tValue not found in node")
-                    class_count = Counter(self.classes)
-                    return DecisionTreeLeaf(class_count.most_common(1))
+                    return self.children[index]
+
+        print("\t\t\tValue not found in node")
+        class_count = Counter(self.classes)
+        return DecisionTreeLeaf(class_count.most_common(1))
 
 
 class DecisionTree:
-    def __init__(self, train, target):
+    def __init__(self, train, target, prune = False):
         indexes = [str(index) for index in range(len(train))]
         train.set_index([indexes])
         self.root = DecisionTreeNode(None, target)
         self.root.columns = list(train.columns)
         self.create_tree(train, target, self.root)
+
+        if prune:
+            self.prune()
 
     def create_tree(self, train, target, parent):
         target = [temp for temp in target]
@@ -179,9 +179,7 @@ class DecisionTree:
 
         parent.attribute = lowest_key
         parent.path_values_list = [nodes[lowest_key]["row_class_pair"][key] for key in nodes[lowest_key]["row_class_pair"].keys()]
-        print(parent.path_values_list)
         parent.path_list = list(nodes[lowest_key]["row_class_pair"].keys())
-        print(parent.path_list)
 
         for ind in range(len(parent.path_values_list)):
             lines = [val["line"] for val in parent.path_values_list[ind]]
@@ -241,24 +239,23 @@ class DecisionTree:
         return self.root.structure()
 
 
-class DecisionTreeClassifier:
+class DTClassifier:
     def __init__(self, train, target):
+        self.train = train
+        self.target = target
         self.tree = DecisionTree(train, target)
 
     def structure(self):
         return self.tree.structure()
 
     def predict(self, data):
-        print("Start Predict")
-        print(data.columns)
-        print(self.tree.root.columns)
+        print("Start Predict\n")
+        print("Columns:\n\t{}".format(", ".join(self.tree.root.columns)))
 
         if len(data.columns) != len(self.tree.root.columns):
             return None
 
         node = self.tree.root
-
-        print(isinstance(node, DecisionTreeLeaf))
 
         while not isinstance(node, DecisionTreeLeaf):
             column_index = node.columns.index(node.attribute)
