@@ -86,9 +86,6 @@ class DecisionTree:
         self.root.columns = list(train.columns)
         self.create_tree(train, target, self.root)
 
-        if prune:
-            self.prune()
-
     def create_tree(self, train, target, parent):
         target = [temp for temp in target]
 
