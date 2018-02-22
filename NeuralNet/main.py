@@ -1,7 +1,7 @@
 from sklearn import datasets, preprocessing
 
 import pandas as pd
-from O5NeuralNet.Net import NNetClassifier
+from NeuralNet.Net import NNetClassifier
 
 # Grabbing iris dataset
 iris = datasets.load_iris()
@@ -14,4 +14,4 @@ normalized = pd.DataFrame(np_scaled)
 # using Neural net to classify
 net = NNetClassifier(1)
 
-print(net.calculate(normalized[0]))
+print(net.calculate(iris["data"][0]))
