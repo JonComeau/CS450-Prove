@@ -12,6 +12,8 @@ np_scaled = min_max_scaler.fit_transform(iris["data"])
 normalized = pd.DataFrame(np_scaled)
 
 # using Neural net to classify
-net = NNetClassifier(1)
+net = NNetClassifier([2, 3, 1])
 
 print(net.calculate(iris["data"][0]))
+
+print(net.calculate_all(iris["data"]))
