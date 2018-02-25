@@ -22,10 +22,12 @@ def download():
 def load(columns):
     data = {}
 
-    file = files[0]
-
     for index in range(len(datasets)):
-        df = pd.read_csv("data/{}".format(file), names=columns[datasets[index]], skipinitialspace=True, na_values=["?", "NA"])
+        df = pd.read_csv(
+            "data/{}".format(files[index]),
+            names=columns[datasets[index]],
+            skipinitialspace=True,
+            na_values=["?", "NA"])
         data[datasets[index]] = df
 
     return data
