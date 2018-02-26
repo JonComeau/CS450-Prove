@@ -1,58 +1,81 @@
+from random import randint
+from collections import Counter
+
+import numpy as np
+import math
+import operator
+
+
+def distance(x, y):
+    dist = 0
+    for index in range(len(y)):
+        dist += pow(x[index] - y[index], 2)
+    return math.sqrt(dist)
+
+
 class KNNClassifier:
     def __init__(self, n_neighbors):
         self.k = n_neighbors
+        self.max_min = []
 
     def fit(self, train_data, train_target):
-        self.train_data = train_data
+        self.train_data = train_data.astype(dtype=np.float)
         self.train_target = train_target
 
+        columns = self.train_data.T
+
+        for col in columns:
+            self.get_max_min(col)
+
+        for index in range(len(columns)):
+            for ind in range(len(columns[index])):
+                value = float(columns[index][ind])
+                col_min = float(self.max_min[index]["min"])
+                col_max = float(self.max_min[index]["max"])
+                total = (value - col_min) / (col_max - col_min)
+
+                columns[index][ind] = total
+
+    def get_max_min(self, col):
+        col_min = min(col)
+        col_max = max(col)
+
+        self.max_min.append({"max": col_max, "min": col_min})
+
     def predict(self, test_data):
-        classes = []
+        predictions = []
 
-        for item in test_data:
-            dists = []
-            dist_dict = {}
+        for test_row in test_data:
+            distances = []
 
-            for point in self.train_data:
-                point_dists = []
+            for index in range(len(self.train_data)):
+                distances.append((distance(test_row, self.train_data[index]), index))
 
-                for index in range(len(item)):
-                    point_dists.append(np.linalg.norm(item[index] - point[index]))
+            distances.sort(key=operator.itemgetter(0))
 
-                dists.append(sum(point_dists))
-
-            for index in range(len(dists)):
-                # print(str(dists[index]) + ', ')
-                dist_dict[dists[index]] = index
-
-            dists.sort()
-
-            neigh_classes = []
+            neighbors = []
 
             for index in range(self.k):
-                ind = dist_dict[dists[index]]
+                neighbors.append(self.train_target[distances[index][1]])
 
-                neigh_classes.append(self.train_target[ind])
+            counter = Counter(neighbors)
+            most_common = counter.most_common(1)
 
-            cls_count = dict((cls, 0) for cls in set(self.train_target))
+            print(f"Neighbors: {neighbors}, Most Common: {most_common}")
 
-            for cls in neigh_classes:
-                cls_count[cls] += 1
+            predictions.append(most_common[0][0])
 
-            largest_cls = []
-            counter = 0
+        print(predictions)
 
-            for key, value in cls_count.items():
-                if value > counter:
-                    counter = value
-                    largest_cls.append(key)
+        return predictions
 
-            if len(largest_cls) > 1:
-                rand = randint(0, 1)
-                largest = largest_cls[rand]
-            else:
-                largest = largest_cls[0]
+    def score(self, test_data, test_classes):
+        predicted = self.predict(test_data)
 
-            classes.append(largest)
+        correct_count = 0
 
-        return classes
+        for index in range(len(test_data)):
+            if test_classes[index] == predicted[index]:
+                correct_count += 1
+
+        return correct_count / len(test_classes)
