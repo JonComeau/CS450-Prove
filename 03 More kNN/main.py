@@ -1,9 +1,10 @@
 from sklearn.preprocessing import LabelEncoder
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_iris
 from datasets import download, load
 from kNN import KNNClassifier
+from kRegression import kRegression
 
 import pandas as pd
 import numpy as np
@@ -65,8 +66,27 @@ def calculate_accuracy(df, class_column, neighbors=5):
     print(f"sklearn kNN accuracy: {sklearn_score}, my kNN accuracy: {score}\n")
 
 
+def process_mpg(df):
+    df.fillna(0)
+    print(df)
+    print(df.dtypes)
+
+    for col in df.columns.values:
+        df[col].fillna(0, inplace=True)
+
+    matrix = df.as_matrix()
+
+    for index in range(len(matrix.T) - 1):
+        mean = sum(matrix.T[index]) / len(matrix.T[index])
+
+        for ind in range(len(matrix.T[index])):
+            if matrix.T[index][ind] < 1.0:
+                matrix.T[index][ind] = mean
+
+    return pd.DataFrame(data=matrix, columns=df.columns.values)
+
 cols = {
-    "cars": [
+    "cars""": [
         "buying",
         "maint",
         "doors",
@@ -111,7 +131,7 @@ irisDF = pd.DataFrame(data=np.c_[iris['data'], iris['target']], columns=iris['fe
 
 print("Iris Dataset")
 
-calculate_accuracy(irisDF, "target")
+# calculate_accuracy(irisDF, target)
 
 # cars
 
@@ -119,7 +139,7 @@ process_cars(datas['cars'])
 
 print("Cars Dataset")
 
-calculate_accuracy(datas['cars'], "class-values")
+# calculate_accuracy(datas['cars'], class-values)
 
 # pima indian
 
@@ -133,8 +153,21 @@ process_pima(datas['pima'], ['glucose-concentration',
 
 print("Pima Dataset")
 
-calculate_accuracy(datas['pima'], "class-variable")
+# calculate_accuracy(datas['pima'], class-variable)
 
 # mpg
 
+print("MGP Dataset")
 
+datas['mpg'] = process_mpg(datas['mpg'])
+datas['mpg'] = datas['mpg'].iloc[:, :-1]
+
+kReg = KNeighborsRegressor(2)
+my_kReg = kRegression()
+
+data, target = split(datas['mpg'], "mpg")
+
+kReg.fit(data, target)
+my_kReg.fit(data, target)
+
+regPredict = kReg.predict()

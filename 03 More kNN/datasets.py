@@ -8,8 +8,7 @@ files = ["cars.data", "pima-indian-diabetes.data", "auto-mpg.data"]
 def download():
     urls = [
         "https://archive.ics.uci.edu/ml/machine-learning-databases/car/car.data",
-        "https://archive.ics.uci.edu/ml/machine-learning-databases/pima-indians-diabetes/pima-indians-diabetes.data",
-        "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data"]
+        "https://archive.ics.uci.edu/ml/machine-learning-databases/pima-indians-diabetes/pima-indians-diabetes.data"]
 
     for index in range(len(urls)):
         if not os.path.isfile("data/" + files[index]):
@@ -27,7 +26,8 @@ def load(columns):
             "data/{}".format(files[index]),
             names=columns[datasets[index]],
             skipinitialspace=True,
-            na_values=["?", "NA"])
+            na_values=["?", "NA"],
+        )
         data[datasets[index]] = df
 
     return data
