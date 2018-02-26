@@ -1,6 +1,7 @@
 from sklearn.preprocessing import LabelEncoder
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
 from datasets import download, load
 from kNN import KNNClassifier
 
@@ -102,6 +103,15 @@ cols = {
 download()
 
 datas = load(cols)
+iris = load_iris()
+
+# testing iris
+
+irisDF = pd.DataFrame(data=np.c_[iris['data'], iris['target']], columns=iris['feature_names'] + ['target'])
+
+print("Iris Dataset")
+
+calculate_accuracy(irisDF, "target")
 
 # cars
 
@@ -109,9 +119,9 @@ process_cars(datas['cars'])
 
 print("Cars Dataset")
 
-# calculate_accuracy(datas['cars'], "class-values")
+calculate_accuracy(datas['cars'], "class-values")
 
-# pima
+# pima indian
 
 process_pima(datas['pima'], ['glucose-concentration',
                              'diastolic-blood-pressure',
@@ -120,9 +130,6 @@ process_pima(datas['pima'], ['glucose-concentration',
                              'diabetes-pedigree-function',
                              'two-hour-insulin',
                              'age'])
-
-print(datas['pima'])
-print("")
 
 print("Pima Dataset")
 

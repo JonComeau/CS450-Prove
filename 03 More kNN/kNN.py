@@ -22,32 +22,21 @@ class KNNClassifier:
         self.train_data = train_data.astype(dtype=np.float)
         self.train_target = train_target
 
-        columns = self.train_data.T
-
-        for col in columns:
-            self.get_max_min(col)
-
-        print(self.max_min)
-
-        for index in range(len(columns)):
-            for ind in range(len(columns[index])):
-                value = float(columns[index][ind])
-                col_min = float(self.max_min[index]["min"])
-                col_max = float(self.max_min[index]["max"])
-                total = (value - col_min) / (col_max - col_min)
-
-                columns[index][ind] = total
-
-        print(self.train_data)
-
-    def get_max_min(self, col):
-        col_min = min(col)
-        col_max = max(col)
-
-        self.max_min.append({"max": col_max, "min": col_min})
-
     def predict(self, test_data):
         predictions = []
+
+        neighbors_list = self.nearest_neighbors(test_data)
+
+        for neighbors in neighbors_list:
+            counter = Counter(neighbors)
+            most_common = counter.most_common(1)
+
+            predictions.append(most_common[0][0])
+
+        return predictions
+
+    def nearest_neighbors(self, test_data):
+        neighbor_list = []
 
         for test_row in test_data:
             distances = []
@@ -62,14 +51,9 @@ class KNNClassifier:
             for index in range(self.k):
                 neighbors.append(self.train_target[distances[index][1]])
 
-            counter = Counter(neighbors)
-            most_common = counter.most_common(1)
+            neighbor_list.append(neighbors)
 
-            print(neighbors)
-
-            predictions.append(most_common[0][0])
-
-        return predictions
+        return neighbor_list
 
     def score(self, test_data, test_classes):
         predicted = self.predict(test_data)
