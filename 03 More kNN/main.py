@@ -48,6 +48,22 @@ def process_pima(pimaDF, columns):
                 pimaDF.at[index, column] = mean
 
 
+def calculate_accuracy(df, class_column, neighbors=5):
+    data, classes = split(df, class_column)
+
+    data_train, data_test, class_train, class_test = train_test_split(data, classes)
+
+    sklearn_kNN = KNeighborsClassifier(n_neighbors=neighbors)
+    sklearn_kNN.fit(data_train, class_train.ravel())
+    sklearn_score = sklearn_kNN.score(data_test, class_test)
+
+    kNN = KNNClassifier(neighbors)
+    kNN.fit(data_train, class_train.ravel())
+    score = kNN.score(data_test, class_test)
+
+    print(f"sklearn kNN accuracy: {sklearn_score}, my kNN accuracy: {score}\n")
+
+
 cols = {
     "cars": [
         "buying",
@@ -89,31 +105,13 @@ datas = load(cols)
 
 # cars
 
-cars_class_column = "class-values"
-
 process_cars(datas['cars'])
 
-cars_data, cars_class = split(datas['cars'], cars_class_column)
+print("Cars Dataset")
 
-cars_data_train, cars_data_test, cars_class_train, cars_class_test = train_test_split(cars_data, cars_class)
-
-print("Cars dataset with sklearn kNN classifier started")
-
-cars_sklearn_kNN = KNeighborsClassifier(n_neighbors=5)
-cars_sklearn_kNN.fit(cars_data_train, cars_class_train.ravel())
-cars_sklearn_score = cars_sklearn_kNN.score(cars_data_test, cars_class_test)
-
-print("Cars dataset with my kNN classifier started")
-
-cars_kNN = KNNClassifier(5)
-cars_kNN.fit(cars_data_train, cars_class_train.ravel())
-cars_score = cars_kNN.score(cars_data_test, cars_class_test)
-
-print(f"sklearn kNN accuracy: {cars_sklearn_score}, my kNN accuracy: {cars_score}\n")
+# calculate_accuracy(datas['cars'], "class-values")
 
 # pima
-
-pima_class_column = "class-variable"
 
 process_pima(datas['pima'], ['glucose-concentration',
                              'diastolic-blood-pressure',
@@ -123,4 +121,13 @@ process_pima(datas['pima'], ['glucose-concentration',
                              'two-hour-insulin',
                              'age'])
 
+print(datas['pima'])
+print("")
+
+print("Pima Dataset")
+
+calculate_accuracy(datas['pima'], "class-variable")
+
 # mpg
+
+

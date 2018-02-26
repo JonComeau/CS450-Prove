@@ -27,6 +27,8 @@ class KNNClassifier:
         for col in columns:
             self.get_max_min(col)
 
+        print(self.max_min)
+
         for index in range(len(columns)):
             for ind in range(len(columns[index])):
                 value = float(columns[index][ind])
@@ -35,6 +37,8 @@ class KNNClassifier:
                 total = (value - col_min) / (col_max - col_min)
 
                 columns[index][ind] = total
+
+        print(self.train_data)
 
     def get_max_min(self, col):
         col_min = min(col)
@@ -61,11 +65,9 @@ class KNNClassifier:
             counter = Counter(neighbors)
             most_common = counter.most_common(1)
 
-            print(f"Neighbors: {neighbors}, Most Common: {most_common}")
+            print(neighbors)
 
             predictions.append(most_common[0][0])
-
-        print(predictions)
 
         return predictions
 
